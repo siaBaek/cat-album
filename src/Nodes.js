@@ -44,22 +44,38 @@ export default function Nodes({ $app, initialState, onClick, onBackClick }) {
         : nodesTemplate;
     }
 
-    this.$target.querySelectorAll(".Node").forEach(($node) => {
-      $node.addEventListener("click", (e) => {
-        const { nodeId } = e.target.dataset;
+    // this.$target.querySelectorAll(".Node").forEach(($node) => {
+    //   $node.addEventListener("click", (e) => {
+    //     const { nodeId } = e.target.dataset;
 
-        if (!nodeId) {
-          this.onBackClick();
-        }
+    //     if (!nodeId) {
+    //       this.onBackClick();
+    //     }
 
-        const selectedNode = this.state.nodes.find((node) => {
-          node.id === nodeId;
+    //     const selectedNode = this.state.nodes.find((node) => {
+    //       node.id === nodeId;
 
-          if (selectedNode) {
-            this.onClick(selectedNode);
-          }
-        });
-      });
-    });
+    //       if (selectedNode) {
+    //         this.onClick(selectedNode);
+    //       }
+    //     });
+    //   });
+    // });
   };
+  this.$target.addEventListener("click", (e) => {
+    const $node = e.target.closest(".Node");
+    if ($node) {
+      const { nodeId } = $node.dataset;
+
+      if (!nodeId) {
+        this.onBackClick();
+        return;
+      }
+      const selectedNode = this.state.nodes.find((node) => node.id === nodeId);
+
+      if (selectedNode) {
+        this.onClick(selectedNode);
+      }
+    }
+  });
 }

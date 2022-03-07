@@ -4,6 +4,8 @@ import ImageView from "./ImageView";
 import { request } from "./api";
 import Loading from "./Loading";
 
+const cache = {};
+
 export default function App($app) {
   this.state = {
     // isRoot: false,
@@ -24,6 +26,28 @@ export default function App($app) {
   const breadcrumb = new Breadcrumb({
     $app,
     initialState: this.state.depth,
+    onClick: (index) => {
+      if (index === null) {
+        this.setState({
+          ...this.state,
+          depth: [],
+          nodes: cache.root,
+        });
+        return;
+      }
+      if (index === this.state.depth.length - 1) {
+        return;
+      }
+
+      const nextState = { ...this.state };
+      const nextDepth = this.state.depth.lastIndexOf(0, index + 1);
+
+      this.setState({
+        ...nextState,
+        depth: nextDepth,
+        nodes: cache[nextDepth[nextDepth.length - 1].id],
+      });
+    },
   });
 
   const nodes = new Nodes({
@@ -36,14 +60,23 @@ export default function App($app) {
     onClick: async (node) => {
       try {
         if (node.type === "DIRECTORY") {
-          // DIRECTORY
-          // 여기서 breadcrumb 처리하면 Nodes에서는 Breadcrumb 몰라도 됨
-          const nextNodes = await request(node.id);
-          this.setState({
-            ...this.state,
-            depth: [...this.state.depth, node],
-            nodes: nextNodes,
-          });
+          if (cache[node.id]) {
+            this.setState({
+              ...this.state,
+              depth: [...this.state.depth, node],
+              nodes: nextNodes,
+            });
+          } else {
+            // DIRECTORY
+            // 여기서 breadcrumb 처리하면 Nodes에서는 Breadcrumb 몰라도 됨
+            const nextNodes = await request(node.id);
+            this.setState({
+              ...this.state,
+              depth: [...this.state.depth, node],
+              nodes: nextNodes,
+            });
+            cache[node.id] = nextNodes;
+          }
         } else if (node.type === "FILE") {
           // FILE
           this.setState({
@@ -70,15 +103,15 @@ export default function App($app) {
           this.setState({
             ...nextState,
             isRoot: true,
-            nodes: rootNodes,
+            // nodes: cache.rootNodes,
+            nodes: cache[rootNodes],
           });
         } else {
           const prevNodes = await request(prevNodeId);
-
           this.setState({
             ...nextNodes,
             isRoot: false,
-            nodes: prevNodes,
+            nodes: cache[prevNodes],
           });
         }
       } catch (e) {
@@ -99,17 +132,19 @@ export default function App($app) {
   };
 
   const init = async () => {
+    this.setState({
+      ...this.state,
+      isLoading: true,
+    });
+
     try {
-      this.setState({
-        ...this.state,
-        isLoading: true,
-      });
       const rootNodes = await request();
       this.setState({
         ...this.state,
         isRoot: true,
         nodes: rootNodes,
       });
+      cache.root = rootNodes;
     } catch (e) {
       alert(e.message);
     } finally {
