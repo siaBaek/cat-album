@@ -1,16 +1,11 @@
 {
-  "name": "cat-album",
+  "name": "vanillaSPA",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
-  "scripts": {
-    "start": "serve -l 3000",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "rotoshine",
-  "license": "ISC",
+  "repository": "https://github.com/siaBaek/cat-album.git",
+  "author": "lazySia <tldk9640@naver.com>",
+  "license": "MIT",
   "dependencies": {
-    "serve": "^13.0.2"
+    "express": "^4.17.3"
   }
 }
